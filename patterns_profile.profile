@@ -6,40 +6,41 @@
  */
  
 /**
- * Return an array of the modules to be enabled when this profile is installed.
- *
- * @return
- *   An array of modules to enable.
- */
+* Return an array of the modules to be enabled when this profile is installed.
+*
+* @return
+*   An array of modules to enable.
+*/
 function patterns_profile_profile_modules() {
-  // Take the opportunity to check a few requirements before the DB is installed
-  $path = conf_path() .'/files';
-  if (!is_dir($path)) {
-    drupal_maintenance_theme();
-    drupal_set_message(st('Files directory !dir does not exist. Please create and ensure it is writable before continuing.', array('!dir' => $path)), 'error');
+	// Take the opportunity to check a few requirements before the DB is installed
+	$path = conf_path() .'/files';
+	if (!is_dir($path)) {
+		drupal_maintenance_theme();
+		drupal_set_message(st('Files directory !dir does not exist. Please create and ensure it is writable before continuing.', array('!dir' => $path)), 'error');
+	
+		drupal_set_title(st('Incompatible environment'));
+		print theme('install_page', '');
+		exit;
+	}
+	else if (!is_writable($path)) {
+		drupal_maintenance_theme();
+		drupal_set_message(st('Files directory !dir is not writable. Please ensure it is writable by the web processes before continuing.', array('!dir' => $path)), 'error');
+	
+		drupal_set_title(st('Incompatible environment'));
+		print theme('install_page', '');
+		exit;
+	}
 
-    drupal_set_title(st('Incompatible environment'));
-    print theme('install_page', '');
-    exit;
-  }
-  else if (!is_writable($path)) {
-    drupal_maintenance_theme();
-    drupal_set_message(st('Files directory !dir is not writable. Please ensure it is writable by the web processes before continuing.', array('!dir' => $path)), 'error');
+    return array(
+      // default core modules
+      'color', 'comment', 'help', 'menu', 'taxonomy', 'dblog',
 
-    drupal_set_title(st('Incompatible environment'));
-    print theme('install_page', '');
-    exit;	
-  }
+      // modules required by patterns
+      'patterns', 'token', 'libraries',
 
-  return array(
-    // default core modules
-    'color', 'comment', 'help', 'menu', 'taxonomy', 'dblog',
-		
-    // modules required by patterns
-    'patterns','token',
-
-  );
+    );
 }
+
 
 /**
  * Return a description of the profile for the initial installation screen.
@@ -49,7 +50,7 @@ function patterns_profile_profile_modules() {
  *   and optional 'language' to override the language selection for
  *   language-specific profiles.
  */
-function patterns_profile_profile_details() {
+function patterns_profile_profile_detailTODO() {
   return array(
     'name' => 'Patterns Profile',
     'description' => 'Configure the site by using patterns'
@@ -65,7 +66,7 @@ function patterns_profile_profile_details() {
  *   while the values will be displayed to the user in the installer
  *   task list.
  */
-function patterns_profile_profile_task_list() {
+function patterns_profile_profile_task_listTODO() {
   $tasks = array(
     'select-patterns' => st('Select patterns'),
     'patterns-status' => st('Patterns status'),
@@ -73,6 +74,20 @@ function patterns_profile_profile_task_list() {
   return $tasks;
 }
 
+/**
+* Implements hook_install_tasks().
+*/
+function patterns_profile_install_tasks() {
+  $tasks = array();
+
+  // Add a page for selecting patterns
+  $tasks['patterns_profile_form'] = array(
+   'display_name' => st('Select Pattern'),
+   'type' => 'form',
+  );
+
+  return $tasks;
+}
 /**
  * Perform any final installation tasks for this profile.
  *
@@ -124,8 +139,8 @@ function patterns_profile_profile_task_list() {
  *   An optional HTML string to display to the user. Only used if you
  *   modify the $task, otherwise discarded.
  */
+/* TODO: how to get this function called? */
 function patterns_profile_profile_tasks(&$task, $url) {
- 
   variable_set('patterns_profile_redirect_url', $url);
 
   if ($task == 'profile') {
@@ -226,18 +241,25 @@ function patterns_profile_form_alter(&$form, $form_state, $form_id) {
     $form['site_information']['site_name']['#default_value'] = $_SERVER['SERVER_NAME'];
   }
 }
+function patterns_profile_form_alter_old(&$form, $form_state, $form_id) {
+	if ($form_id == 'install_configure') {
+		// Set default for site name field.
+		$form['site_information']['site_name']['#default_value'] = $_SERVER['SERVER_NAME'];
+	}
+}
 
-function patterns_profile_form(&$form_state, $url) {
+function patterns_profile_form($form, &$form_state, $url) {
+
   $patterns = patterns_get_patterns(true);
   foreach($patterns as $pattern) {
     $options[$pattern->name] = $pattern->title .'<div class="description">'. $pattern->description .'</description>'; 
   }
-  
+
   $form['description'] = array(
     '#type' => 'markup',
     '#value' => t("Patterns provide additional features and functionality to Drupal sites and save your time by setting them up automatically for you. Please choose the patterns that you would like to setup on your new site."),
   );
-  
+
   $form['patterns'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Select which patterns to run'),
@@ -247,14 +269,42 @@ function patterns_profile_form(&$form_state, $url) {
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save and Continue'),
-  );  
+  );
 
-  $form['#action'] = $url;
-  $form['#redirect'] = variable_get('patterns_profile_redirect_url', '');
+//  $form['#action'] = $url;
+//  $form['#redirect'] = variable_get('patterns_profile_redirect_url', '');
   return $form;
+}
+function patterns_profile_form_old($form, &$form_state, $url) {
+
+	$patterns = patterns_get_patterns(true);
+	foreach($patterns as $pattern) {
+		$options[$pattern->name] = $pattern->title .'<div class="description">'. $pattern->description .'</description>';
+	}
+
+	$form['description'] = array(
+    '#type' => 'markup',
+    '#value' => t("Patterns provide additional features and functionality to Drupal sites and save your time by setting them up automatically for you. Please choose the patterns that you would like to setup on your new site."),
+	);
+
+	$form['patterns'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Select which patterns to run'),
+    '#options' => $options,
+	);
+
+	$form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save and Continue'),
+	);
+
+	$form['#action'] = $url;
+	$form['#redirect'] = variable_get('patterns_profile_redirect_url', '');
+	return $form;
 }
 
 function patterns_profile_form_submit($form, &$form_state) {
+
   $patterns = array_filter($form_state['values']['patterns']);
   variable_set('patterns_profile_selected', $patterns);
   
@@ -264,7 +314,24 @@ function patterns_profile_form_submit($form, &$form_state) {
   foreach($patterns as $p) {
     $pattern->pattern['actions'][] = array('tag' => 'pattern', 'value' => $p);
   }
-  patterns_execute_pattern($pattern);
+  //include (drupal_get_path('module', 'patterns') . '/patterns.module');
+  patterns_start_engine($pattern);
+  //patterns_execute_pattern($pattern);
   variable_set('patterns_profile_executed', TRUE);
-  $form_state['redirect'] = variable_get('patterns_profile_redirect_url', '');  
+  $form_state['redirect'] = variable_get('patterns_profile_redirect_url', '');
+}
+
+function patterns_profile_form_submit_old($form, &$form_state) {
+	$patterns = array_filter($form_state['values']['patterns']);
+	variable_set('patterns_profile_selected', $patterns);
+
+	// combine all patterns into one in order to avoid problems
+	// with batch operations
+	$pattern = patterns_get_pattern(array_shift($patterns));
+	foreach($patterns as $p) {
+		$pattern->pattern['actions'][] = array('tag' => 'pattern', 'value' => $p);
+	}
+	patterns_execute_pattern($pattern);
+	variable_set('patterns_profile_executed', TRUE);
+	$form_state['redirect'] = variable_get('patterns_profile_redirect_url', '');
 }
