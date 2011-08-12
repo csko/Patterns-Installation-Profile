@@ -1,0 +1,41 @@
+
+Patterns Installation Profile
+=============================
+
+This installation profile provides a simple integration of 
+patterns module into the Drupal's installation procedure.
+
+It enables a user to execute one or more patterns during the 
+installation.
+
+The Patterns module provides a way to automatically setup and 
+configure multiple features on a Drupal site by reading and 
+executing site configuration stored in easy to read files.
+Currently supported formats for configuration files (called patterns)
+are XML and YAML.
+
+For instructions on using an installation profile, see:
+http://drupal.org/node/306267
+
+For more details about patterns, see:
+http://drupal.org/project/patterns
+
+
+
+REQUIREMENTS:
+
+- patterns module (http://drupal.org/project/patterns)
+- token module (http://drupal.org/project/token)
+- pattern (configuration) file(s) you want to execute
+
+Note that pattern files may require additional modules. 
+
+
+USAGE:
+
+1) Add patterns and token modules to you site's modules folder
+
+2) Add patterns_profile to Profiles folder
+
+3) During the installation select Patterns Installation Profile
+
