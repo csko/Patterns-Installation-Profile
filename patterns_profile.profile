@@ -2,7 +2,7 @@
 
 /**
  * @file 
- * Provides an option to select patterns to be executed during the site installation 
+ * Provides an option to select patterns to be executed during the site installation. 
  */
  
 /**
@@ -31,14 +31,16 @@ function patterns_profile_profile_modules() {
 		exit;
 	}
 
-    return array(
-      // default core modules
-      'color', 'comment', 'help', 'menu', 'taxonomy', 'dblog',
+  // TODO: check for Spyc and Codemirror.
 
-      // modules required by patterns
-      'patterns', 'token', 'libraries',
+  return array(
+    // default core modules
+    'color', 'comment', 'help', 'menu', 'taxonomy', 'dblog',
 
-    );
+    // modules required by patterns
+    'patterns', 'token', 'libraries',
+
+  );
 }
 
 
@@ -251,8 +253,10 @@ function patterns_profile_form_alter_old(&$form, $form_state, $form_id) {
 function patterns_profile_form($form, &$form_state, $url) {
 
   $patterns = patterns_get_patterns(true);
+  $patterns = $patterns[PATTERNS_STATUS_OK];
+  // TODO: show a list similar to the Patterns List page.
   foreach($patterns as $pattern) {
-    $options[$pattern->name] = $pattern->title .'<div class="description">'. $pattern->description .'</description>'; 
+    $options[$pattern->name] = $pattern->title .'<div class="description">'. $pattern->description .'</div>'; 
   }
 
   $form['description'] = array(
@@ -270,14 +274,13 @@ function patterns_profile_form($form, &$form_state, $url) {
     '#type' => 'submit',
     '#value' => t('Save and Continue'),
   );
-
 //  $form['#action'] = $url;
 //  $form['#redirect'] = variable_get('patterns_profile_redirect_url', '');
   return $form;
 }
 function patterns_profile_form_old($form, &$form_state, $url) {
 
-	$patterns = patterns_get_patterns(true);
+  $patterns = patterns_get_patterns(true);
 	foreach($patterns as $pattern) {
 		$options[$pattern->name] = $pattern->title .'<div class="description">'. $pattern->description .'</description>';
 	}

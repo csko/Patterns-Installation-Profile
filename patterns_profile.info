@@ -1,6 +1,7 @@
 name = Patterns Installation Profile
 description = Install a default profile and run some patterns
 core = 7.x
+php = "5.3"
 
 dependencies[] = color
 dependencies[] = comment
@@ -27,4 +28,5 @@ dependencies[] = token
 dependencies[] = patterns
 dependencies[] = libraries
 
-files[] = profilename.profile
+files[] = patterns_profile.profile
+
